@@ -1,0 +1,13 @@
+os:
+  - linux
+language: minimal
+services:
+  - docker
+before_install:
+  - docker run -d --network=host registry
+  - curl -sLo opm "$(curl -sL https://api.github.com/repos/operator-framework/operator-registry/releases/latest | jq -r '[.assets[] | select(.name == "linux-amd64-opm")] | first | .browser_download_url')"
+  - chmod +x opm
+script:
+  - docker build -t localhost:5000/bundle-example:local .
+  - docker push localhost:5000/bundle-example:local
+  - ./opm alpha bundle validate -t localhost:5000/bundle-example:local
